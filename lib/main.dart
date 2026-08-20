@@ -56,6 +56,18 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   Color borderColor = Colors.blue;
   Color backgroundColor = Colors.black;
+  //int index = 0;
+  List<String?> board = List.filled(9, null);
+  bool shouldShowCross = true;
+  void handleTap(int index) {
+    print('taped');
+    if (board[index] != null) return;
+
+    setState(() {
+      board[index] = shouldShowCross ? "X" : "O";
+      shouldShowCross = !shouldShowCross;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,42 +96,19 @@ class _MyHomePageState extends State<MyHomePage> {
                         width: 100,
                         height: 100,
                         color: backgroundColor,
-                        child: Cell(),
+                        child: Cell(index: 0, board: board, onTap: handleTap),
                       ),
                       Container(
                         width: 100,
                         height: 100,
                         color: backgroundColor,
-                        child: Cell(),
+                        child: Cell(index: 1, board: board, onTap: handleTap),
                       ),
                       Container(
                         width: 100,
                         height: 100,
                         color: backgroundColor,
-                        child: Cell(shouldShowCross: true),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
+                        child: Cell(index: 2, board: board, onTap: handleTap),
                       ),
                     ],
                   ),
@@ -130,24 +119,48 @@ class _MyHomePageState extends State<MyHomePage> {
                         width: 100,
                         height: 100,
                         color: backgroundColor,
-                        child: Cell(),
+                        child: Cell(index: 3, board: board, onTap: handleTap),
                       ),
                       Container(
                         width: 100,
                         height: 100,
                         color: backgroundColor,
-                        child: Cell(),
+                        child: Cell(index: 4, board: board, onTap: handleTap),
                       ),
                       Container(
                         width: 100,
                         height: 100,
                         color: backgroundColor,
-                        child: Cell(),
+                        child: Cell(index: 5, board: board, onTap: handleTap),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        color: backgroundColor,
+                        child: Cell(index: 6, board: board, onTap: handleTap),
+                      ),
+                      Container(
+                        width: 100,
+                        height: 100,
+                        color: backgroundColor,
+                        child: Cell(index: 7, board: board, onTap: handleTap),
+                      ),
+                      Container(
+                        width: 100,
+                        height: 100,
+                        color: backgroundColor,
+                        child: Cell(index: 8, board: board, onTap: handleTap),
                       ),
                     ],
                   ),
                 ],
               ),
+
               Positioned(
                 left: 95,
                 child: Container(width: 10, height: 300, color: borderColor),
@@ -173,8 +186,17 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class Cell extends StatefulWidget {
-  bool shouldShowCross = false;
-  Cell({this.shouldShowCross = false});
+  final int index;
+  final List<String?> board;
+
+  //final bool shouldShowCross;
+  final Function(int) onTap;
+  const Cell({
+    super.key,
+    required this.index,
+    required this.board,
+    required this.onTap,
+  });
 
   @override
   State<Cell> createState() => _CellState();
@@ -183,18 +205,17 @@ class Cell extends StatefulWidget {
 class _CellState extends State<Cell> {
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
-        setState(() {
-          widget.shouldShowCross = !widget.shouldShowCross;
-        });
+        print("taped");
+        widget.onTap(widget.index);
       },
       child: Container(
         width: 100,
         height: 100,
         alignment: Alignment.center,
         child: Text(
-          widget.shouldShowCross ? 'X' : 'O',
+          widget.board[widget.index] ?? '',
           style: TextStyle(color: Colors.white, fontSize: 40),
         ),
       ),
