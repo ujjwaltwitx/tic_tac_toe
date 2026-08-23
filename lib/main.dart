@@ -56,6 +56,99 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   Color borderColor = Colors.blue;
   Color backgroundColor = Colors.black;
+  //int index = 0;
+  //List<String?> board = List.filled(9, null);
+  List<List<String?>> board = List.generate(3, (_) => List.filled(3, null));
+  bool shouldShowCross = true;
+  bool gameOver = false;
+  String msg = "X Turn";
+  int count = 0;
+  void handleTap(int row, int col) {
+    if (gameOver) {
+      return;
+    }
+    if (board[row][col] != null) {
+      return;
+    }
+    setState(() {
+      board[row][col] = shouldShowCross ? "X" : "O";
+      count++;
+    });
+    if (checkWinner()) {
+      print("${shouldShowCross ? "X" : "O"} wins!");
+      setState(() {
+        gameOver = true;
+        msg = "${shouldShowCross ? "X" : "O"} Wins!";
+        resetGame();
+      });
+      return;
+    }
+    if (count == 9) {
+      resetGame();
+    }
+
+    setState(() {
+      shouldShowCross = !shouldShowCross;
+      msg = shouldShowCross ? "X Turn" : "O Turn";
+    });
+  }
+
+  void resetGame() {
+    setState(() {
+      board = List.generate(3, (_) => List.filled(3, null));
+    });
+    shouldShowCross = true;
+    gameOver = false;
+    msg = "X Turn";
+    count = 0;
+  }
+
+  // bool isFilled() {
+  //   for (int row = 0; row < 3; row++) {
+  //     for (int col = 0; col < 3; col++) {
+  //       if (board[row][col] != null) {
+  //         count++;
+  //         if (count == 9) {
+  //           return;
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  bool checkWinner() {
+    for (int row = 0; row < 3; row++) {
+      if (board[row][0] != null &&
+          board[row][0] == board[row][1] &&
+          board[row][1] == board[row][2]) {
+        return true;
+      }
+    }
+    for (int col = 0; col < 3; col++) {
+      if (board[0][col] != null &&
+          board[0][col] == board[1][col] &&
+          board[1][col] == board[2][col]) {
+        return true;
+      }
+    }
+    for (int row = 0; row < 3; row++) {
+      if (board[0][0] != null &&
+          board[0][0] == board[1][1] &&
+          board[1][1] == board[2][2]) {
+        return true;
+      }
+    }
+
+    for (int row = 0; row < 3; row++) {
+      if (board[0][2] != null &&
+          board[0][2] == board[1][1] &&
+          board[1][1] == board[2][0]) {
+        return true;
+      }
+    }
+    return false;
+    // we  are left with diagonal check
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,115 +159,186 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      body: Center(
-        child: SizedBox(
-          width: 300,
-          height: 300,
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(shouldShowCross: true),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        color: backgroundColor,
-                        child: Cell(),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Positioned(
-                left: 95,
-                child: Container(width: 10, height: 300, color: borderColor),
-              ),
-              Positioned(
-                right: 95,
-                child: Container(width: 10, height: 300, color: borderColor),
-              ),
-              Positioned(
-                top: 95,
-                child: Container(width: 300, height: 10, color: borderColor),
-              ),
-              Positioned(
-                bottom: 95,
-                child: Container(width: 300, height: 10, color: borderColor),
-              ),
-            ],
+      appBar: AppBar(title: Text('Tic-Tac-Toe'), centerTitle: true),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 300,
+            height: 300,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          color: backgroundColor,
+                          child: Cell(
+                            row: 0,
+                            col: 0,
+                            board: board,
+                            onTap: handleTap,
+                          ),
+                        ),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          color: backgroundColor,
+                          child: Cell(
+                            row: 0,
+                            col: 1,
+                            board: board,
+                            onTap: handleTap,
+                          ),
+                        ),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          color: backgroundColor,
+                          child: Cell(
+                            row: 0,
+                            col: 2,
+                            board: board,
+                            onTap: handleTap,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          color: backgroundColor,
+                          child: Cell(
+                            row: 1,
+                            col: 0,
+                            board: board,
+                            onTap: handleTap,
+                          ),
+                        ),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          color: backgroundColor,
+                          child: Cell(
+                            row: 1,
+                            col: 1,
+                            board: board,
+                            onTap: handleTap,
+                          ),
+                        ),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          color: backgroundColor,
+                          child: Cell(
+                            row: 1,
+                            col: 2,
+                            board: board,
+                            onTap: handleTap,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          color: backgroundColor,
+                          child: Cell(
+                            row: 2,
+                            col: 0,
+                            board: board,
+                            onTap: handleTap,
+                          ),
+                        ),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          color: backgroundColor,
+                          child: Cell(
+                            row: 2,
+                            col: 1,
+                            board: board,
+                            onTap: handleTap,
+                          ),
+                        ),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          color: backgroundColor,
+                          child: Cell(
+                            row: 2,
+                            col: 2,
+                            board: board,
+                            onTap: handleTap,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                Positioned(
+                  left: 95,
+                  child: Container(width: 10, height: 300, color: borderColor),
+                ),
+                Positioned(
+                  right: 95,
+                  child: Container(width: 10, height: 300, color: borderColor),
+                ),
+                Positioned(
+                  top: 95,
+                  child: Container(width: 300, height: 10, color: borderColor),
+                ),
+                Positioned(
+                  bottom: 95,
+                  child: Container(width: 300, height: 10, color: borderColor),
+                ),
+              ],
+            ),
           ),
-        ),
+          Container(
+            alignment: Alignment.center,
+            width: double.infinity,
+            height: 100,
+            // color: backgroundColo,
+            child: Text(
+              "${msg}",
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+
+              // 'djasgXIubahzsq'
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class Cell extends StatefulWidget {
-  bool shouldShowCross = false;
-  Cell({this.shouldShowCross = false});
+  final int row;
+  final int col;
+  final List<List<String?>> board;
+  final Function(int, int) onTap;
+  const Cell({
+    super.key,
+    required this.row,
+    required this.col,
+    required this.board,
+    required this.onTap,
+  });
 
   @override
   State<Cell> createState() => _CellState();
@@ -182,19 +346,19 @@ class Cell extends StatefulWidget {
 
 class _CellState extends State<Cell> {
   @override
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
-        setState(() {
-          widget.shouldShowCross = !widget.shouldShowCross;
-        });
+        print("taped");
+        widget.onTap(widget.row, widget.col);
       },
       child: Container(
         width: 100,
         height: 100,
         alignment: Alignment.center,
         child: Text(
-          widget.shouldShowCross ? 'X' : 'O',
+          widget.board[widget.row][widget.col] ?? '',
           style: TextStyle(color: Colors.white, fontSize: 40),
         ),
       ),
