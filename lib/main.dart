@@ -63,6 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool gameOver = false;
   String msg = "X Turn";
   int count = 0;
+  String buttonMsg = "RESET";
   void handleTap(int row, int col) {
     if (gameOver) {
       return;
@@ -79,6 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         gameOver = true;
         msg = "${shouldShowCross ? "X" : "O"} Wins!";
+        buttonMsg = "PLAY AGAIN!";
         resetGame();
       });
       return;
@@ -90,6 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       shouldShowCross = !shouldShowCross;
       msg = shouldShowCross ? "X Turn" : "O Turn";
+      buttonMsg = "RESET";
     });
   }
 
@@ -99,7 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     shouldShowCross = true;
     gameOver = false;
-    msg = "X Turn";
+    // msg = "X Turn";
+    //buttonMsg = "RESET";
     count = 0;
   }
 
@@ -321,6 +325,24 @@ class _MyHomePageState extends State<MyHomePage> {
               // 'djasgXIubahzsq'
             ),
           ),
+
+          ElevatedButton(
+            onPressed: resetGame,
+            child: Container(
+              height: 50,
+              width: 100,
+              alignment: Alignment.center,
+              child: Text(
+                buttonMsg,
+                style: TextStyle(
+                  fontSize: buttonMsg == "RESET" ? 30 : 15,
+                  fontWeight: FontWeight.bold,
+                  color: buttonMsg == "RESET" ? Colors.red : Colors.green,
+                ),
+              ),
+            ),
+            // backgroundColor: Colors.amber,
+          ),
         ],
       ),
     );
@@ -359,7 +381,14 @@ class _CellState extends State<Cell> {
         alignment: Alignment.center,
         child: Text(
           widget.board[widget.row][widget.col] ?? '',
-          style: TextStyle(color: Colors.white, fontSize: 40),
+          style: TextStyle(
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+            color:
+                widget.board[widget.row][widget.col] == 'X'
+                    ? Colors.white
+                    : const Color.fromARGB(255, 115, 8, 216),
+          ),
         ),
       ),
     );
