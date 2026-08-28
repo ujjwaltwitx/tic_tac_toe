@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'feature/game/ui/screens/game_screen.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -12,6 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -28,7 +31,6 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -54,8 +56,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Color borderColor = Colors.blue;
-  Color backgroundColor = Colors.black;
   //int index = 0;
   //List<String?> board = List.filled(9, null);
   List<List<String?>> board = List.generate(3, (_) => List.filled(3, null));
@@ -156,268 +156,55 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(title: Text('Tic-Tac-Toe'), centerTitle: true),
+    return GameScreen();
+    // return Scaffold(
+    //   appBar: AppBar(title: Text('Tic-Tac-Toe'), centerTitle: true),
 
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 300,
-              height: 300,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 100,
-                            height: 100,
-                            color: backgroundColor,
-                            child: Cell(
-                              row: 0,
-                              col: 0,
-                              board: board,
-                              onTap: handleTap,
-                            ),
-                          ),
-                          Container(
-                            width: 100,
-                            height: 100,
-                            color: backgroundColor,
-                            child: Cell(
-                              row: 0,
-                              col: 1,
-                              board: board,
-                              onTap: handleTap,
-                            ),
-                          ),
-                          Container(
-                            width: 100,
-                            height: 100,
-                            color: backgroundColor,
-                            child: Cell(
-                              row: 0,
-                              col: 2,
-                              board: board,
-                              onTap: handleTap,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 100,
-                            height: 100,
-                            color: backgroundColor,
-                            child: Cell(
-                              row: 1,
-                              col: 0,
-                              board: board,
-                              onTap: handleTap,
-                            ),
-                          ),
-                          Container(
-                            width: 100,
-                            height: 100,
-                            color: backgroundColor,
-                            child: Cell(
-                              row: 1,
-                              col: 1,
-                              board: board,
-                              onTap: handleTap,
-                            ),
-                          ),
-                          Container(
-                            width: 100,
-                            height: 100,
-                            color: backgroundColor,
-                            child: Cell(
-                              row: 1,
-                              col: 2,
-                              board: board,
-                              onTap: handleTap,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 100,
-                            height: 100,
-                            color: backgroundColor,
-                            child: Cell(
-                              row: 2,
-                              col: 0,
-                              board: board,
-                              onTap: handleTap,
-                            ),
-                          ),
-                          Container(
-                            width: 100,
-                            height: 100,
-                            color: backgroundColor,
-                            child: Cell(
-                              row: 2,
-                              col: 1,
-                              board: board,
-                              onTap: handleTap,
-                            ),
-                          ),
-                          Container(
-                            width: 100,
-                            height: 100,
-                            color: backgroundColor,
-                            child: Cell(
-                              row: 2,
-                              col: 2,
-                              board: board,
-                              onTap: handleTap,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  Positioned(
-                    left: 95,
-                    child: Container(
-                      width: 10,
-                      height: 300,
-                      color: borderColor,
-                    ),
-                  ),
-                  Positioned(
-                    right: 95,
-                    child: Container(
-                      width: 10,
-                      height: 300,
-                      color: borderColor,
-                    ),
-                  ),
-                  Positioned(
-                    top: 95,
-                    child: Container(
-                      width: 300,
-                      height: 10,
-                      color: borderColor,
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 95,
-                    child: Container(
-                      width: 300,
-                      height: 10,
-                      color: borderColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 50),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "${msg}",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
-                if (msg == "X wins!" || msg == "O Wins!") SizedBox(width: 8),
-                if (msg == "X Wins!" || msg == "O Wins!")
-                  Icon(Icons.emoji_events, size: 35, color: Colors.amber),
-              ],
-            ),
-            SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: resetGame,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    buttonMsg,
-                    style: TextStyle(
-                      fontSize: buttonMsg == "RESET" ? 30 : 15,
-                      fontWeight: FontWeight.bold,
-                      color: buttonMsg == "RESET" ? Colors.red : Colors.green,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Icon(
-                    buttonMsg == "RESET" ? Icons.refresh : Icons.restart_alt,
-                    size: 30,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class Cell extends StatefulWidget {
-  final int row;
-  final int col;
-  final List<List<String?>> board;
-  final Function(int, int) onTap;
-  const Cell({
-    super.key,
-    required this.row,
-    required this.col,
-    required this.board,
-    required this.onTap,
-  });
-
-  @override
-  State<Cell> createState() => _CellState();
-}
-
-class _CellState extends State<Cell> {
-  @override
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        print("taped");
-        widget.onTap(widget.row, widget.col);
-      },
-      child: Container(
-        width: 100,
-        height: 100,
-        alignment: Alignment.center,
-        child: Text(
-          widget.board[widget.row][widget.col] ?? '',
-          style: TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.bold,
-            color:
-                widget.board[widget.row][widget.col] == 'X'
-                    ? Colors.white
-                    : const Color.fromARGB(255, 115, 8, 216),
-          ),
-        ),
-      ),
-    );
+    //   body: Container(
+    //     height: double.infinity,
+    //     width: double.infinity,
+    //     child: Column(
+    //       mainAxisAlignment: MainAxisAlignment.center,
+    //       children: [
+    //         GameBoardWidget(gameBoardEngine: GameBoardEngine()),
+    //         SizedBox(height: 50),
+    //         Row(
+    //           mainAxisSize: MainAxisSize.min,
+    //           children: [
+    //             Text(
+    //               "${msg}",
+    //               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+    //             ),
+    //             if (msg == "X wins!" || msg == "O Wins!") SizedBox(width: 8),
+    //             if (msg == "X Wins!" || msg == "O Wins!")
+    //               Icon(Icons.emoji_events, size: 35, color: Colors.amber),
+    //           ],
+    //         ),
+    //         SizedBox(height: 50),
+    //         ElevatedButton(
+    //           onPressed: resetGame,
+    //           child: Row(
+    //             mainAxisSize: MainAxisSize.min,
+    //             children: [
+    //               Text(
+    //                 buttonMsg,
+    //                 style: TextStyle(
+    //                   fontSize: buttonMsg == "RESET" ? 30 : 15,
+    //                   fontWeight: FontWeight.bold,
+    //                   color: buttonMsg == "RESET" ? Colors.red : Colors.green,
+    //                 ),
+    //               ),
+    //               SizedBox(width: 8),
+    //               Icon(
+    //                 buttonMsg == "RESET" ? Icons.refresh : Icons.restart_alt,
+    //                 size: 30,
+    //               ),
+    //             ],
+    //           ),
+    //         ),
+    //       ],
+    //     ),
+    //   ),
+    // );
   }
 }
