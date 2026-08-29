@@ -27,7 +27,7 @@ class MyWidget extends StatelessWidget {
 
             Positioned(
               top: 80,
-              child: Container(height: 386, width: 185, child: tic_toe_logo()),
+              child: SizedBox(height: 386, width: 185, child: tic_toe_logo()),
             ),
 
             Positioned(
