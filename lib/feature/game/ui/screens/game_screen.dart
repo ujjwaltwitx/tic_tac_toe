@@ -6,6 +6,8 @@ import 'package:tic_tac_toe/feature/game/ui/widgets/game_board_widget.dart';
 import 'package:tic_tac_toe/shared/custom_theme_data.dart';
 import 'package:tic_tac_toe/shared/widgets/navbar_widget.dart';
 
+import '../../../../shared/utilities/positioning.dart';
+
 class GameScreen extends StatelessWidget {
   const GameScreen({super.key});
 
@@ -15,8 +17,7 @@ class GameScreen extends StatelessWidget {
       body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
-        padding: EdgeInsets.only(top: 50),
-        // color: Colors.blue,
+        padding: EdgeInsets.only(top: Positioning.safeAreaPaddingTop),
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -24,27 +25,33 @@ class GameScreen extends StatelessWidget {
             Positioned(top: 0, child: _topBar()),
 
             // round info
-            Positioned(top: 80, child: _roundInfo()),
+            Positioned(
+              top: Positioning.getActualDeviceHeight(80),
+              child: _roundInfo(),
+            ),
 
             // player info
-            Positioned(top: 134, child: _playersInfo()),
+            Positioned(
+              top: Positioning.getActualDeviceHeight(134),
+              child: _playersInfo(),
+            ),
 
             // game board
             Positioned(
-              top: 250,
+              top: Positioning.getActualDeviceHeight(250),
               child: GameBoardWidget(gameBoardEngine: GameBoardEngine()),
             ),
 
             // new game button
             Positioned(
-              top: 610,
+              top: Positioning.getActualDeviceHeight(610),
               child: InkWell(
                 onTap: () {},
                 child: Transform.rotate(
                   angle: 1 * pi / 180,
                   child: Container(
-                    width: 128,
-                    height: 52,
+                    width: Positioning.getActualDeviceWidth(128),
+                    height: Positioning.getActualDeviceHeight(52),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       border: Border.all(color: Color(0xff162839), width: 2),
@@ -64,7 +71,10 @@ class GameScreen extends StatelessWidget {
             ),
 
             // bottom navigation bar
-            Positioned(bottom: 50, child: CustomNavigationBar()),
+            Positioned(
+              bottom: Positioning.safeAreaPaddingBottom,
+              child: CustomNavigationBar(),
+            ),
           ],
         ),
       ),
@@ -73,8 +83,8 @@ class GameScreen extends StatelessWidget {
 
   Widget _playersInfo() {
     return SizedBox(
-      width: 342,
-      height: 48,
+      width: Positioning.getActualDeviceWidth(342),
+      height: Positioning.getActualDeviceHeight(48),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -131,10 +141,15 @@ class GameScreen extends StatelessWidget {
 
   Container _roundInfo() {
     return Container(
-      height: 34,
-      width: 342,
+      height: Positioning.getActualDeviceHeight(34),
+      width: Positioning.getActualDeviceWidth(342),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xff162839), width: 2)),
+        border: Border(
+          bottom: BorderSide(
+            color: Color(0xff162839),
+            width: Positioning.getAssetSize(2),
+          ),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.max,
@@ -144,8 +159,8 @@ class GameScreen extends StatelessWidget {
             "X's Turn",
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.normal,
-              fontFamily: CustomThemeData.fontFamilyBricolage,
+              fontWeight: FontWeight.w600,
+              fontFamily: CustomThemeData.fontFamilyKarla,
               color: Color(0xff162839),
             ),
           ),
@@ -165,8 +180,8 @@ class GameScreen extends StatelessWidget {
 
   Widget _topBar() {
     return Container(
-      width: 390,
-      height: 48,
+      width: Positioning.getActualDeviceWidth(390),
+      height: Positioning.getActualDeviceHeight(48),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: Color(0xff162839), width: 2)),
@@ -194,8 +209,8 @@ class GameScreen extends StatelessWidget {
   Widget _buildCircleIndicator() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 2),
-      height: 10,
-      width: 10,
+      height: Positioning.getAssetSize(10),
+      width: Positioning.getAssetSize(10),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Color(0xff43474c),
