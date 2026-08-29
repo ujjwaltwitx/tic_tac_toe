@@ -1,17 +1,19 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:tic_tac_toe/feature/game/domain/ports/game_board_port.dart';
+
+import '../../../../shared/utilities/positioning.dart';
+import '../../domain/ports/game_board_port.dart';
 
 class GameBoardWidget extends StatelessWidget {
-  GameBoardPort gameBoardEngine;
-  GameBoardWidget({super.key, required this.gameBoardEngine});
+  final GameBoardPort gameBoardEngine;
+  const GameBoardWidget({super.key, required this.gameBoardEngine});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 300,
-      height: 300,
+      width: Positioning.getAssetSize(300),
+      height: Positioning.getAssetSize(300),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -23,8 +25,8 @@ class GameBoardWidget extends StatelessWidget {
                   children: [
                     for (int col = 0; col < 3; col++)
                       SizedBox(
-                        width: 100,
-                        height: 100,
+                        width: Positioning.getAssetSize(100),
+                        height: Positioning.getAssetSize(100),
                         child: Cell(
                           row: row,
                           col: col,
@@ -69,8 +71,8 @@ class _CellState extends State<Cell> {
         setState(() {});
       },
       child: Container(
-        width: 100,
-        height: 100,
+        width: Positioning.getAssetSize(100),
+        height: Positioning.getAssetSize(100),
         alignment: Alignment.center,
         child: Text(
           widget.gameBoardEngine.board[widget.row][widget.col] ?? '',
@@ -101,6 +103,7 @@ class HandDrawnGrid extends StatelessWidget {
         return Stack(
           clipBehavior: Clip.none,
           children: [
+            // Container(color: Colors.red),
             _horizontalStroke(
               top: h / 3,
               rotateDeg: 1,
