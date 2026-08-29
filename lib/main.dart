@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tic_tac_toe/feature/game/ui/screens/mainmenu_screen.dart';
 
 import 'feature/game/ui/screens/game_screen.dart';
 
@@ -156,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return GameScreen();
+    return MyWidget();
     // return Scaffold(
     //   appBar: AppBar(title: Text('Tic-Tac-Toe'), centerTitle: true),
 
