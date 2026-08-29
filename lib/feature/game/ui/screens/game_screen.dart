@@ -7,6 +7,7 @@ import 'package:tic_tac_toe/shared/custom_theme_data.dart';
 import 'package:tic_tac_toe/shared/widgets/navbar_widget.dart';
 
 import '../../../../shared/utilities/positioning.dart';
+import '../../../../shared/widgets/top_bar_widget.dart';
 
 class GameScreen extends StatelessWidget {
   const GameScreen({super.key});
@@ -22,7 +23,7 @@ class GameScreen extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             // top bar
-            Positioned(top: 0, child: _topBar()),
+            Positioned(top: 0, child: TopBarWidget()),
 
             // round info
             Positioned(
@@ -173,34 +174,6 @@ class GameScreen extends StatelessWidget {
               color: Color(0xff43474c),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _topBar() {
-    return Container(
-      width: Positioning.getActualDeviceWidth(390),
-      height: Positioning.getActualDeviceHeight(48),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xff162839), width: 2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.menu)),
-          Text(
-            "Tic Tac Toe",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.normal,
-              fontFamily: CustomThemeData.fontFamilyBricolage,
-              color: Color(0xff162839),
-            ),
-          ),
-          IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
         ],
       ),
     );
