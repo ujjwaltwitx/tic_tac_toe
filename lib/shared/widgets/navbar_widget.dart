@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../custom_theme_data.dart';
+import '../utilities/positioning.dart';
 
 class CustomNavigationBar extends StatefulWidget {
   static int selectedIndex = 0;
@@ -13,8 +14,8 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 72,
+      width: Positioning.screenWidth,
+      height: Positioning.getActualDeviceHeight(72),
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: Color(0xff162839), width: 4)),
       ),

@@ -53,6 +53,11 @@ class GameOverScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 84,
                           fontFamily: CustomThemeData.fontFamilyKarla,
+                          color: isDraw
+                              ? const Color(0xff162839)
+                              : CustomThemeData.colorForMark(
+                                  winner.isEmpty ? 'X' : winner,
+                                ),
                           fontVariations: [
                             FontVariation('opsz', 84),
                             FontVariation('wght', 800),

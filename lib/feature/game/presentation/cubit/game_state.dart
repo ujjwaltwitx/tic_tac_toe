@@ -1,5 +1,6 @@
 import '../../domain/bot_difficulty.dart';
 import '../../domain/game_mode.dart';
+import '../../domain/winning_line.dart';
 
 class GameState {
   const GameState({
@@ -13,6 +14,7 @@ class GameState {
     this.isCpuThinking = false,
     this.todayPlayerWins = 0,
     this.round = 1,
+    this.winningLine,
   });
 
   final List<List<String>> board;
@@ -25,6 +27,7 @@ class GameState {
   final bool isCpuThinking;
   final int todayPlayerWins;
   final int round;
+  final WinningLine? winningLine;
 
   bool get inputEnabled =>
       !isGameFinished &&

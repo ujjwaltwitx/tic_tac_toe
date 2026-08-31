@@ -8,4 +8,17 @@ class CustomThemeData {
 
   static const String fontFamilyBricolage = "Bricolage Grotesque";
   static const String fontFamilyKarla = "Karla";
+
+  static const Color markX = Color(0xffb02d21);
+  static const Color markO = Color(0xff162839);
+
+  static Color colorForMark(String mark) {
+    if (mark == 'O') {
+      return markO;
+    }
+    if (mark == 'X') {
+      return markX;
+    }
+    return const Color(0xff162839);
+  }
 }

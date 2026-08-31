@@ -81,7 +81,7 @@ class LandingScreen extends StatelessWidget {
             ),
 
             Positioned(
-              bottom: Positioning.getActualDeviceHeight(50),
+              bottom: Positioning.safeAreaPaddingBottom,
               child: CustomNavigationBar(),
             ),
           ],

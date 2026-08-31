@@ -3,6 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../shared/utilities/positioning.dart';
+import '../../../../shared/custom_theme_data.dart';
+import '../../domain/winning_line.dart';
+import 'winning_line_overlay.dart';
 
 class GameBoardWidget extends StatelessWidget {
   const GameBoardWidget({
@@ -10,11 +13,15 @@ class GameBoardWidget extends StatelessWidget {
     required this.board,
     required this.inputEnabled,
     required this.onCellTap,
+    this.winningLine,
+    this.onWinLineCompleted,
   });
 
   final List<List<String>> board;
   final bool inputEnabled;
   final void Function(int row, int col) onCellTap;
+  final WinningLine? winningLine;
+  final VoidCallback? onWinLineCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +51,15 @@ class GameBoardWidget extends StatelessWidget {
                 ),
             ],
           ),
+          if (winningLine != null)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedWinningLine(
+                  line: winningLine,
+                  onCompleted: onWinLineCompleted ?? () {},
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -72,10 +88,10 @@ class Cell extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           mark,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 40,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF162839),
+            color: CustomThemeData.colorForMark(mark),
           ),
         ),
       ),

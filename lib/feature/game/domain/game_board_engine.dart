@@ -2,6 +2,7 @@ import 'bot_difficulty.dart';
 import 'game_mode.dart';
 import 'game_snapshot.dart';
 import 'ports/game_board_port.dart';
+import 'winning_line.dart';
 
 class GameBoardEngine implements GameBoardPort {
   GameBoardEngine({
@@ -19,6 +20,7 @@ class GameBoardEngine implements GameBoardPort {
   bool isGameFinished = false;
   String winner = '';
   String draw = '';
+  WinningLine? winningLine;
 
   @override
   List<List<String>> get board => _board;
@@ -32,6 +34,7 @@ class GameBoardEngine implements GameBoardPort {
     isDraw: draw == 'Draw',
     mode: _mode,
     difficulty: _difficulty,
+    winningLine: winningLine,
   );
 
   @override
@@ -41,6 +44,7 @@ class GameBoardEngine implements GameBoardPort {
     isGameFinished = false;
     winner = '';
     draw = '';
+    winningLine = null;
   }
 
   @override
@@ -51,6 +55,10 @@ class GameBoardEngine implements GameBoardPort {
           _board[i][2] == currentPlayer) {
         winner = currentPlayer;
         isGameFinished = true;
+        winningLine = WinningLine(
+          mark: currentPlayer,
+          cells: [(i, 0), (i, 1), (i, 2)],
+        );
         return;
       }
     }
@@ -60,6 +68,10 @@ class GameBoardEngine implements GameBoardPort {
           _board[2][i] == currentPlayer) {
         winner = currentPlayer;
         isGameFinished = true;
+        winningLine = WinningLine(
+          mark: currentPlayer,
+          cells: [(0, i), (1, i), (2, i)],
+        );
         return;
       }
     }
@@ -68,6 +80,10 @@ class GameBoardEngine implements GameBoardPort {
         _board[2][2] == currentPlayer) {
       winner = currentPlayer;
       isGameFinished = true;
+      winningLine = WinningLine(
+        mark: currentPlayer,
+        cells: const [(0, 0), (1, 1), (2, 2)],
+      );
       return;
     }
     if (_board[0][2] == currentPlayer &&
@@ -75,6 +91,10 @@ class GameBoardEngine implements GameBoardPort {
         _board[2][0] == currentPlayer) {
       winner = currentPlayer;
       isGameFinished = true;
+      winningLine = WinningLine(
+        mark: currentPlayer,
+        cells: const [(0, 2), (1, 1), (2, 0)],
+      );
       return;
     }
   }

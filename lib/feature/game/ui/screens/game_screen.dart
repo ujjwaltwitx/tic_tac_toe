@@ -21,29 +21,10 @@ class GameScreen extends StatelessWidget {
     return BlocListener<GameCubit, GameState>(
       listenWhen:
           (previous, current) =>
-              !previous.isGameFinished && current.isGameFinished,
-      listener: (context, state) {
-        showGeneralDialog<void>(
-          context: context,
-          barrierDismissible: false,
-          barrierLabel: 'Game over',
-          pageBuilder: (dialogContext, animation, secondaryAnimation) {
-            return GameOverScreen(
-              winner: state.winner,
-              isDraw: state.isDraw,
-              todayPlayerWins: state.todayPlayerWins,
-              onPlayAgain: () {
-                Navigator.of(dialogContext).pop();
-                context.read<GameCubit>().onNewGame();
-              },
-              onMainMenu: () {
-                Navigator.of(dialogContext).pop();
-                Navigator.of(context).pop();
-              },
-            );
-          },
-        );
-      },
+              !previous.isGameFinished &&
+              current.isGameFinished &&
+              current.isDraw,
+      listener: (context, state) => _showGameOver(context, state),
       child: Scaffold(
         body: BlocBuilder<GameCubit, GameState>(
           builder: (context, state) {
@@ -77,8 +58,28 @@ class GameScreen extends StatelessWidget {
                       board: state.board,
                       inputEnabled: state.inputEnabled,
                       onCellTap: context.read<GameCubit>().onCellTapped,
+                      winningLine: state.winningLine,
+                      onWinLineCompleted: () {
+                        Future<void>.delayed(
+                          const Duration(milliseconds: 280),
+                          () {
+                            if (!context.mounted) {
+                              return;
+                            }
+                            _showGameOver(
+                              context,
+                              context.read<GameCubit>().state,
+                            );
+                          },
+                        );
+                      },
                     ),
                   ),
+                  if (state.isCpuThinking)
+                    Positioned(
+                      top: Positioning.getActualDeviceHeight(600),
+                      child: _cpuThinkingIndicator(),
+                    ),
                   Positioned(
                     top: Positioning.getActualDeviceHeight(650),
                     child: InkWell(
@@ -118,6 +119,32 @@ class GameScreen extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  Widget _cpuThinkingIndicator() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Analyzing',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            fontFamily: CustomThemeData.fontFamilyKarla,
+            color: const Color(0xff43474c),
+          ),
+        ),
+        SizedBox(width: Positioning.getAssetSize(10)),
+        SizedBox(
+          width: Positioning.getAssetSize(16),
+          height: Positioning.getAssetSize(16),
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: const Color(0xff162839),
+          ),
+        ),
+      ],
     );
   }
 
@@ -179,6 +206,29 @@ class GameScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showGameOver(BuildContext context, GameState state) {
+    showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'Game over',
+      pageBuilder: (dialogContext, animation, secondaryAnimation) {
+        return GameOverScreen(
+          winner: state.winner,
+          isDraw: state.isDraw,
+          todayPlayerWins: state.todayPlayerWins,
+          onPlayAgain: () {
+            Navigator.of(dialogContext).pop();
+            context.read<GameCubit>().onNewGame();
+          },
+          onMainMenu: () {
+            Navigator.of(dialogContext).pop();
+            Navigator.of(context).pop();
+          },
+        );
+      },
     );
   }
 }

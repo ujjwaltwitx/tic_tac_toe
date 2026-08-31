@@ -60,6 +60,7 @@ class GameCubit extends Cubit<GameState> {
       isCpuThinking: isCpuThinking ?? false,
       todayPlayerWins: todayPlayerWins ?? state.todayPlayerWins,
       round: round ?? state.round,
+      winningLine: snapshot.winningLine,
     );
   }
 
@@ -93,14 +94,15 @@ class GameCubit extends Cubit<GameState> {
   void _afterMove() {
     final snapshot = _engine.snapshot;
     if (snapshot.isGameFinished && !state.isGameFinished) {
-      _finishGame(snapshot);
+      emit(_fromSnapshot(snapshot));
+      _persistFinish(snapshot);
       return;
     }
     emit(_fromSnapshot(snapshot));
     _maybePlayCpu();
   }
 
-  Future<void> _finishGame(GameSnapshot snapshot) async {
+  Future<void> _persistFinish(GameSnapshot snapshot) async {
     final todayPlayerWins = await _progress.recordFinishedGame(
       winner: snapshot.winner,
       isDraw: snapshot.isDraw,
@@ -122,7 +124,7 @@ class GameCubit extends Cubit<GameState> {
 
     final job = ++_cpuJob;
     emit(_fromSnapshot(snapshot, isCpuThinking: true));
-    await Future<void>.delayed(const Duration(milliseconds: 1000));
+    await Future<void>.delayed(const Duration(milliseconds: 800));
     if (isClosed || job != _cpuJob) {
       return;
     }
