@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tic_tac_toe/feature/ads/data/admob_interstitial_service.dart';
+import 'package:tic_tac_toe/feature/ads/domain/ports/interstitial_ad_port.dart';
 import 'package:tic_tac_toe/feature/game/data/daily_challenge_scheduler.dart';
 import 'package:tic_tac_toe/feature/game/data/shared_preferences_game_progress_repository.dart';
 import 'package:tic_tac_toe/feature/game/domain/cpu_player.dart';
@@ -9,6 +11,7 @@ import 'package:tic_tac_toe/feature/game/domain/game_mode.dart';
 import 'package:tic_tac_toe/feature/game/domain/ports/game_progress_port.dart';
 import 'package:tic_tac_toe/feature/game/presentation/cubit/game_cubit.dart';
 import 'package:tic_tac_toe/feature/game/presentation/cubit/history_cubit.dart';
+import 'package:tic_tac_toe/feature/game/presentation/cubit/landing_cubit.dart';
 import 'package:tic_tac_toe/feature/game/ui/screens/landing_screen.dart';
 import 'package:tic_tac_toe/feature/game/ui/screens/games_history_screen.dart';
 import 'package:tic_tac_toe/feature/settings/data/move_feedback.dart';
@@ -24,6 +27,9 @@ import 'shared/utilities/positioning.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AdMobInterstitialService.initializeSdk();
+  final interstitialAds = AdMobInterstitialService();
+  await interstitialAds.preload();
   final prefs = await SharedPreferences.getInstance();
   final progress = SharedPreferencesGameProgressRepository(prefs);
   await progress.load();
@@ -38,6 +44,7 @@ Future<void> main() async {
       scheduler: scheduler,
       appSettings: appSettings,
       moveFeedback: moveFeedback,
+      interstitialAds: interstitialAds,
     ),
   );
 }
@@ -49,12 +56,14 @@ class MyApp extends StatelessWidget {
     required this.scheduler,
     required this.appSettings,
     required this.moveFeedback,
+    required this.interstitialAds,
   });
 
   final GameProgressPort progress;
   final DailyChallengeScheduler scheduler;
   final AppSettingsPort appSettings;
   final MoveFeedback moveFeedback;
+  final InterstitialAdPort interstitialAds;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +77,10 @@ class MyApp extends StatelessWidget {
         onGenerateRoute: (settings) {
           if (settings.name == '/') {
             return AppPageTransitions.route<void>(
-              builder: (_) => const LandingScreen(),
+              builder: (_) => BlocProvider(
+                create: (_) => LandingCubit(progress),
+                child: const LandingScreen(),
+              ),
               settings: settings,
             );
           }
@@ -99,6 +111,7 @@ class MyApp extends StatelessWidget {
                   progress: progress,
                   scheduler: scheduler,
                   moveFeedback: moveFeedback,
+                  interstitialAds: interstitialAds,
                 ),
                 child: const GameScreen(),
               ),

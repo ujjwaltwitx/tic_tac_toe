@@ -1,8 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tic_tac_toe/feature/game/domain/game_mode.dart';
+import 'package:tic_tac_toe/feature/game/presentation/cubit/landing_cubit.dart';
 import 'package:tic_tac_toe/shared/custom_theme_data.dart';
 import 'package:tic_tac_toe/shared/widgets/navbar_widget.dart';
-
-import 'package:flutter/material.dart';
 
 import '../../../../shared/utilities/positioning.dart';
 import '../../../../shared/widgets/top_bar_widget.dart';
@@ -51,6 +52,10 @@ class LandingScreen extends StatelessWidget {
             ),
 
             Positioned(
+              top: Positioning.getActualDeviceHeight(448),
+              child: const _DailyStreakChip(),
+            ),
+            Positioned(
               top: Positioning.getActualDeviceHeight(498),
               child: customButton(
                 text: "Play vs CPU",
@@ -60,7 +65,11 @@ class LandingScreen extends StatelessWidget {
                     context,
                     '/game',
                     arguments: GameMode.vsCpu,
-                  );
+                  ).then((_) {
+                    if (context.mounted) {
+                      context.read<LandingCubit>().refresh();
+                    }
+                  });
                 },
               ),
             ),
@@ -75,7 +84,11 @@ class LandingScreen extends StatelessWidget {
                     context,
                     '/game',
                     arguments: GameMode.vsFriend,
-                  );
+                  ).then((_) {
+                    if (context.mounted) {
+                      context.read<LandingCubit>().refresh();
+                    }
+                  });
                 },
               ),
             ),
@@ -105,7 +118,8 @@ class LandingScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            IconButton(onPressed: () {}, icon: Icon(icon)),
+            Icon(icon),
+            SizedBox(width: Positioning.getActualDeviceWidth(10)),
             Text(
               text,
               style: TextStyle(
@@ -118,6 +132,54 @@ class LandingScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DailyStreakChip extends StatelessWidget {
+  const _DailyStreakChip();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<LandingCubit, int>(
+      builder: (context, streak) {
+        final label =
+            streak <= 0
+                ? 'Play today to start a streak'
+                : streak == 1
+                ? '1 day streak'
+                : '$streak day streak';
+        return Container(
+          height: Positioning.getActualDeviceHeight(36),
+          padding: EdgeInsets.symmetric(
+            horizontal: Positioning.getActualDeviceWidth(14),
+          ),
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xff162839), width: 1.5),
+            borderRadius: BorderRadius.circular(Positioning.getAssetSize(3)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.local_fire_department,
+                size: Positioning.getAssetSize(18),
+                color: const Color(0xffb02d21),
+              ),
+              SizedBox(width: Positioning.getActualDeviceWidth(6)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: CustomThemeData.fontFamilyKarla,
+                  color: const Color(0xff162839),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

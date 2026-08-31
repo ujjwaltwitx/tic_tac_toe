@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tic_tac_toe/feature/ads/domain/ports/interstitial_ad_port.dart';
+import 'package:tic_tac_toe/feature/settings/data/move_feedback.dart';
 
 import '../../data/daily_challenge_scheduler.dart';
 import '../../domain/bot_difficulty.dart';
@@ -7,7 +9,6 @@ import '../../domain/game_snapshot.dart';
 import '../../domain/ports/cpu_player_port.dart';
 import '../../domain/ports/game_board_port.dart';
 import '../../domain/ports/game_progress_port.dart';
-import 'package:tic_tac_toe/feature/settings/data/move_feedback.dart';
 import 'game_state.dart';
 
 class GameCubit extends Cubit<GameState> {
@@ -17,18 +18,23 @@ class GameCubit extends Cubit<GameState> {
     required GameProgressPort progress,
     required DailyChallengeScheduler scheduler,
     required MoveFeedback moveFeedback,
+    required InterstitialAdPort interstitialAds,
   }) : _engine = engine,
        _cpuPlayer = cpuPlayer,
        _progress = progress,
        _scheduler = scheduler,
        _moveFeedback = moveFeedback,
-       super(_initial(engine.snapshot));
+       _interstitialAds = interstitialAds,
+       super(_initial(engine.snapshot)) {
+    _interstitialAds.preload();
+  }
 
   final GameBoardPort _engine;
   final CpuPlayerPort _cpuPlayer;
   final GameProgressPort _progress;
   final DailyChallengeScheduler _scheduler;
   final MoveFeedback _moveFeedback;
+  final InterstitialAdPort _interstitialAds;
   int _cpuJob = 0;
 
   static GameState _initial(GameSnapshot snapshot) {
@@ -74,6 +80,10 @@ class GameCubit extends Cubit<GameState> {
     _engine.makeMove(row, col);
     _moveFeedback.onUserCellTap();
     _afterMove();
+  }
+
+  Future<bool> onContinueAfterRound() {
+    return _interstitialAds.showAfterCompletedRound(state.round);
   }
 
   void onNewGame() {
