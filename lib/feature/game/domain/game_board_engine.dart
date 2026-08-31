@@ -1,51 +1,78 @@
+import 'bot_difficulty.dart';
+import 'game_mode.dart';
+import 'game_snapshot.dart';
 import 'ports/game_board_port.dart';
 
 class GameBoardEngine implements GameBoardPort {
-  GameBoardEngine() {
+  GameBoardEngine({
+    GameMode mode = GameMode.vsFriend,
+    BotDifficulty difficulty = BotDifficulty.medium,
+  }) : _mode = mode,
+       _difficulty = difficulty {
     initialize();
   }
 
-  List<List<String>> board = [];
-  String currentPlayer = "X";
+  final GameMode _mode;
+  BotDifficulty _difficulty;
+  List<List<String>> _board = [];
+  String currentPlayer = 'X';
   bool isGameFinished = false;
-  String winner = "";
-  String draw = "";
+  String winner = '';
+  String draw = '';
+
+  @override
+  List<List<String>> get board => _board;
+
+  @override
+  GameSnapshot get snapshot => GameSnapshot(
+    board: _board.map((row) => List<String>.from(row)).toList(),
+    currentPlayer: currentPlayer,
+    isGameFinished: isGameFinished,
+    winner: winner,
+    isDraw: draw == 'Draw',
+    mode: _mode,
+    difficulty: _difficulty,
+  );
 
   @override
   void initialize() {
-    board = List.generate(3, (index) => List.generate(3, (index) => ""));
+    _board = List.generate(3, (_) => List.generate(3, (_) => ''));
+    currentPlayer = 'X';
+    isGameFinished = false;
+    winner = '';
+    draw = '';
   }
 
   @override
   void checkWinner() {
     for (int i = 0; i < 3; i++) {
-      if (board[i][0] == currentPlayer &&
-          board[i][1] == currentPlayer &&
-          board[i][2] == currentPlayer) {
+      if (_board[i][0] == currentPlayer &&
+          _board[i][1] == currentPlayer &&
+          _board[i][2] == currentPlayer) {
         winner = currentPlayer;
         isGameFinished = true;
         return;
       }
     }
     for (int i = 0; i < 3; i++) {
-      if (board[0][i] == currentPlayer &&
-          board[1][i] == currentPlayer &&
-          board[2][i] == currentPlayer) {
+      if (_board[0][i] == currentPlayer &&
+          _board[1][i] == currentPlayer &&
+          _board[2][i] == currentPlayer) {
         winner = currentPlayer;
         isGameFinished = true;
         return;
       }
     }
-    if (board[0][0] == currentPlayer &&
-        board[1][1] == currentPlayer &&
-        board[2][2] == currentPlayer) {
+    if (_board[0][0] == currentPlayer &&
+        _board[1][1] == currentPlayer &&
+        _board[2][2] == currentPlayer) {
       winner = currentPlayer;
       isGameFinished = true;
       return;
     }
-    if (board[0][2] == currentPlayer &&
-        board[1][1] == currentPlayer &&
-        board[2][0] == currentPlayer) {
+    if (_board[0][2] == currentPlayer &&
+        _board[1][1] == currentPlayer &&
+        _board[2][0] == currentPlayer) {
       winner = currentPlayer;
       isGameFinished = true;
       return;
@@ -54,30 +81,48 @@ class GameBoardEngine implements GameBoardPort {
 
   @override
   void checkDraw() {
-    if (isBoardFull() && winner == "") {
-      draw = "Draw";
+    if (isBoardFull() && winner == '') {
+      draw = 'Draw';
       isGameFinished = true;
-      return;
     }
   }
 
   @override
   void makeMove(int row, int col) {
-    board[row][col] = currentPlayer;
-    currentPlayer = currentPlayer == "X" ? "O" : "X";
+    if (isGameFinished) {
+      return;
+    }
+    if (row < 0 || row > 2 || col < 0 || col > 2) {
+      return;
+    }
+    if (_board[row][col] != '') {
+      return;
+    }
+    _board[row][col] = currentPlayer;
     checkWinner();
     checkDraw();
+    if (!isGameFinished) {
+      currentPlayer = currentPlayer == 'X' ? 'O' : 'X';
+    }
   }
 
   @override
   void resetGame() {
-    board = List.generate(3, (index) => List.generate(3, (index) => ""));
+    initialize();
+  }
+
+  @override
+  void setDifficulty(BotDifficulty difficulty) {
+    if (_mode != GameMode.vsCpu) {
+      return;
+    }
+    _difficulty = difficulty;
   }
 
   bool isBoardFull() {
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
-        if (board[i][j] == "") {
+        if (_board[i][j] == '') {
           return false;
         }
       }

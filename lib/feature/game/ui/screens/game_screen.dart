@@ -1,10 +1,14 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:tic_tac_toe/feature/game/domain/game_board_engine.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tic_tac_toe/feature/game/domain/bot_difficulty.dart';
+import 'package:tic_tac_toe/feature/game/domain/game_mode.dart';
+import 'package:tic_tac_toe/feature/game/presentation/cubit/game_cubit.dart';
+import 'package:tic_tac_toe/feature/game/presentation/cubit/game_state.dart';
+import 'package:tic_tac_toe/feature/game/ui/screens/game_over_screen.dart';
 import 'package:tic_tac_toe/feature/game/ui/widgets/game_board_widget.dart';
 import 'package:tic_tac_toe/shared/custom_theme_data.dart';
-import 'package:tic_tac_toe/shared/widgets/navbar_widget.dart';
 
 import '../../../../shared/utilities/positioning.dart';
 import '../../../../shared/widgets/top_bar_widget.dart';
@@ -14,140 +18,139 @@ class GameScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        padding: EdgeInsets.only(top: Positioning.safeAreaPaddingTop),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // top bar
-            Positioned(top: 0, child: TopBarWidget()),
-
-            // round info
-            Positioned(
-              top: Positioning.getActualDeviceHeight(80),
-              child: _roundInfo(),
-            ),
-
-            // player info
-            Positioned(
-              top: Positioning.getActualDeviceHeight(134),
-              child: _playersInfo(),
-            ),
-
-            // game board
-            Positioned(
-              top: Positioning.getActualDeviceHeight(250),
-              child: GameBoardWidget(gameBoardEngine: GameBoardEngine()),
-            ),
-
-            // new game button
-            Positioned(
-              top: Positioning.getActualDeviceHeight(610),
-              child: InkWell(
-                onTap: () {},
-                child: Transform.rotate(
-                  angle: 1 * pi / 180,
-                  child: Container(
-                    width: Positioning.getActualDeviceWidth(128),
-                    height: Positioning.getActualDeviceHeight(52),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xff162839), width: 2),
+    return BlocListener<GameCubit, GameState>(
+      listenWhen:
+          (previous, current) =>
+              !previous.isGameFinished && current.isGameFinished,
+      listener: (context, state) {
+        showGeneralDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          barrierLabel: 'Game over',
+          pageBuilder: (dialogContext, animation, secondaryAnimation) {
+            return GameOverScreen(
+              winner: state.winner,
+              isDraw: state.isDraw,
+              todayPlayerWins: state.todayPlayerWins,
+              onPlayAgain: () {
+                Navigator.of(dialogContext).pop();
+                context.read<GameCubit>().onNewGame();
+              },
+              onMainMenu: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).pop();
+              },
+            );
+          },
+        );
+      },
+      child: Scaffold(
+        body: BlocBuilder<GameCubit, GameState>(
+          builder: (context, state) {
+            return Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              padding: EdgeInsets.only(top: Positioning.safeAreaPaddingTop),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Positioned(
+                    top: 0,
+                    child: TopBarWidget(showBackButton: true),
+                  ),
+                  Positioned(
+                    top: Positioning.getActualDeviceHeight(80),
+                    child: _roundInfo(state),
+                  ),
+                  // Positioned(
+                  //   top: Positioning.getActualDeviceHeight(134),
+                  //   child: _playersInfo(state),
+                  // ),
+                  if (state.mode == GameMode.vsCpu)
+                    Positioned(
+                      top: Positioning.getActualDeviceHeight(150),
+                      child: _difficultySwitch(context, state),
                     ),
-                    child: Text(
-                      "New Game",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        fontFamily: CustomThemeData.fontFamilyKarla,
-                        color: Color(0xffb02d21),
+                  Positioned(
+                    top: Positioning.getActualDeviceHeight(270),
+                    child: GameBoardWidget(
+                      board: state.board,
+                      inputEnabled: state.inputEnabled,
+                      onCellTap: context.read<GameCubit>().onCellTapped,
+                    ),
+                  ),
+                  Positioned(
+                    top: Positioning.getActualDeviceHeight(650),
+                    child: InkWell(
+                      onTap: context.read<GameCubit>().onNewGame,
+                      child: Transform.rotate(
+                        angle: 1 * pi / 180,
+                        child: Container(
+                          width: Positioning.getActualDeviceWidth(128),
+                          height: Positioning.getActualDeviceHeight(52),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: const Color(0xff162839),
+                              width: 2,
+                            ),
+                          ),
+                          child: Text(
+                            'New Game',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: CustomThemeData.fontFamilyKarla,
+                              color: const Color(0xffb02d21),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  // Positioned(
+                  //   bottom: Positioning.safeAreaPaddingBottom,
+                  //   child: CustomNavigationBar(),
+                  // ),
+                ],
               ),
-            ),
-
-            // bottom navigation bar
-            Positioned(
-              bottom: Positioning.safeAreaPaddingBottom,
-              child: CustomNavigationBar(),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _playersInfo() {
+  Widget _difficultySwitch(BuildContext context, GameState state) {
     return SizedBox(
       width: Positioning.getActualDeviceWidth(342),
-      height: Positioning.getActualDeviceHeight(48),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Player (X)",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: CustomThemeData.fontFamilyKarla,
-                  color: Color(0xff43474c),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ...List.generate(
-                    3,
-                    (index) => _buildCircleIndicator(),
-                  ).toList(),
-                ],
-              ),
-            ],
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "CPU (O)",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: CustomThemeData.fontFamilyKarla,
-                  color: Color(0xff43474c),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ...List.generate(
-                    2,
-                    (index) => _buildCircleIndicator(),
-                  ).toList(),
-                ],
-              ),
-            ],
-          ),
+      child: SegmentedButton<BotDifficulty>(
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(value: BotDifficulty.easy, label: Text('Easy')),
+          ButtonSegment(value: BotDifficulty.medium, label: Text('Medium')),
+          ButtonSegment(value: BotDifficulty.hard, label: Text('Hard')),
         ],
+        selected: {state.difficulty},
+        onSelectionChanged: (selected) {
+          context.read<GameCubit>().onDifficultyChanged(selected.first);
+        },
       ),
     );
   }
 
-  Container _roundInfo() {
+  Widget _roundInfo(GameState state) {
+    final turnText =
+        state.isCpuThinking
+            ? 'CPU thinking...'
+            : "${state.currentPlayer}'s Turn";
     return Container(
       height: Positioning.getActualDeviceHeight(34),
       width: Positioning.getActualDeviceWidth(342),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: Color(0xff162839),
+            color: const Color(0xff162839),
             width: Positioning.getAssetSize(2),
           ),
         ),
@@ -157,36 +160,24 @@ class GameScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            "X's Turn",
+            turnText,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               fontFamily: CustomThemeData.fontFamilyKarla,
-              color: Color(0xff162839),
+              color: const Color(0xff162839),
             ),
           ),
           Text(
-            "Round 1",
+            'Round ${state.round}',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               fontFamily: CustomThemeData.fontFamilyKarla,
-              color: Color(0xff43474c),
+              color: const Color(0xff43474c),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCircleIndicator() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 2),
-      height: Positioning.getAssetSize(10),
-      width: Positioning.getAssetSize(10),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Color(0xff43474c),
       ),
     );
   }

@@ -4,7 +4,9 @@ import '../custom_theme_data.dart';
 import '../utilities/positioning.dart';
 
 class TopBarWidget extends StatelessWidget {
-  const TopBarWidget({super.key});
+  final bool showBackButton;
+
+  const TopBarWidget({super.key, this.showBackButton = false});
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +24,23 @@ class TopBarWidget extends StatelessWidget {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment:
+            showBackButton
+                ? MainAxisAlignment.spaceBetween
+                : MainAxisAlignment.center,
         children: [
-          // IconButton(onPressed: () {}, icon: Icon(Icons.menu)),
+          if (showBackButton)
+            Container(
+              color: Colors.transparent,
+              width: Positioning.getActualDeviceWidth(40),
+              alignment: Alignment.center,
+              child: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(Icons.arrow_back),
+              ),
+            ),
           Text(
             "Tic Tac Toe",
             style: TextStyle(
@@ -34,7 +50,8 @@ class TopBarWidget extends StatelessWidget {
               color: Color(0xff162839),
             ),
           ),
-          // IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
+          if (showBackButton)
+            SizedBox(width: Positioning.getActualDeviceWidth(40)),
         ],
       ),
     );

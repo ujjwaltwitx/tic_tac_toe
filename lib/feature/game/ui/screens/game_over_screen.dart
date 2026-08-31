@@ -3,28 +3,32 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../../../shared/custom_theme_data.dart';
-import '../../../../shared/utilities/game_constants.dart';
-import '../../../../shared/utilities/game_util.dart';
 import '../../../../shared/utilities/positioning.dart';
 
 class GameOverScreen extends StatelessWidget {
-  const GameOverScreen({super.key});
+  const GameOverScreen({
+    super.key,
+    this.winner = '',
+    this.isDraw = false,
+    this.todayPlayerWins = 0,
+    this.onPlayAgain,
+    this.onMainMenu,
+  });
+
+  final String winner;
+  final bool isDraw;
+  final int todayPlayerWins;
+  final VoidCallback? onPlayAgain;
+  final VoidCallback? onMainMenu;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Container(
         padding: EdgeInsets.only(top: Positioning.safeAreaPaddingTop),
         width: Positioning.screenWidth,
         height: Positioning.screenHeight,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(
-              GameUtil.getAssetPath(GameConstants.backgroundImage),
-            ),
-            fit: BoxFit.cover,
-          ),
-        ),
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -45,7 +49,7 @@ class GameOverScreen extends StatelessWidget {
                     Positioned(
                       top: Positioning.getActualDeviceHeight(35),
                       child: Text(
-                        'X',
+                        isDraw ? '=' : (winner.isEmpty ? 'X' : winner),
                         style: TextStyle(
                           fontSize: 84,
                           fontFamily: CustomThemeData.fontFamilyKarla,
@@ -61,7 +65,7 @@ class GameOverScreen extends StatelessWidget {
                       child: Transform.rotate(
                         angle: pi / 180 * 2,
                         child: Text(
-                          "WINS!",
+                          isDraw ? 'DRAW!' : 'WINS!',
                           style: TextStyle(
                             fontSize: 28,
                             fontFamily: CustomThemeData.fontFamilyBricolage,
@@ -97,7 +101,7 @@ class GameOverScreen extends StatelessWidget {
                                 color: Color(0xff43474c),
                               ),
                               Text(
-                                "Streak : 3",
+                                "Wins : $todayPlayerWins",
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontFamily: CustomThemeData.fontFamilyKarla,
@@ -112,41 +116,6 @@ class GameOverScreen extends StatelessWidget {
                       ),
                     ),
                     // Button one
-                    Positioned(
-                      top: Positioning.getActualDeviceHeight(277),
-                      child: Container(
-                        width: Positioning.getActualDeviceWidth(280),
-                        height: Positioning.getActualDeviceHeight(70),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Color(0xffb02d21),
-                            width: Positioning.getAssetSize(2),
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            Positioning.getAssetSize(3),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Play Again",
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontFamily: CustomThemeData.fontFamilyBricolage,
-                                color: Color(0xffb02d21),
-                                fontVariations: [
-                                  FontVariation.weight(700),
-                                  FontVariation.opticalSize(22),
-                                ],
-                              ),
-                            ),
-                            Icon(Icons.refresh, color: Color(0xffb02d21)),
-                          ],
-                        ),
-                      ),
-                    ),
-
                     Positioned(
                       top: Positioning.getActualDeviceHeight(273),
                       left: Positioning.getActualDeviceWidth(30),
@@ -171,6 +140,45 @@ class GameOverScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    Positioned(
+                      top: Positioning.getActualDeviceHeight(277),
+                      child: InkWell(
+                        onTap: onPlayAgain,
+                        child: Container(
+                          width: Positioning.getActualDeviceWidth(280),
+                          height: Positioning.getActualDeviceHeight(70),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Color(0xffb02d21),
+                              width: Positioning.getAssetSize(2),
+                            ),
+                            borderRadius: BorderRadius.circular(
+                              Positioning.getAssetSize(3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Play Again",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontFamily:
+                                      CustomThemeData.fontFamilyBricolage,
+                                  color: Color(0xffb02d21),
+                                  fontVariations: [
+                                    FontVariation.weight(700),
+                                    FontVariation.opticalSize(22),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.refresh, color: Color(0xffb02d21)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
                     // Button two
                     Positioned(
                       top: Positioning.getActualDeviceHeight(366),
@@ -200,10 +208,7 @@ class GameOverScreen extends StatelessWidget {
                     Positioned(
                       top: Positioning.getActualDeviceHeight(370),
                       child: InkWell(
-                        onTap: () {
-                          print("Main Menu");
-                          // TODO: Implement main menu navigation
-                        },
+                        onTap: onMainMenu,
                         child: Container(
                           width: Positioning.getActualDeviceWidth(280),
                           height: Positioning.getActualDeviceHeight(46),
@@ -241,7 +246,9 @@ class GameOverScreen extends StatelessWidget {
                     Positioned(
                       bottom: Positioning.getActualDeviceHeight(33),
                       child: Text(
-                        "Better luck next time, O.",
+                        isDraw
+                            ? "It's a draw."
+                            : "Better luck next time, ${winner == 'X' ? 'O' : 'X'}.",
                         style: TextStyle(
                           fontSize: 14,
                           fontFamily: CustomThemeData.fontFamilyKarla,

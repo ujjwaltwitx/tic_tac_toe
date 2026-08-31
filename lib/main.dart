@@ -1,32 +1,114 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tic_tac_toe/feature/game/data/daily_challenge_scheduler.dart';
+import 'package:tic_tac_toe/feature/game/data/shared_preferences_game_progress_repository.dart';
+import 'package:tic_tac_toe/feature/game/domain/cpu_player.dart';
+import 'package:tic_tac_toe/feature/game/domain/game_board_engine.dart';
+import 'package:tic_tac_toe/feature/game/domain/game_mode.dart';
+import 'package:tic_tac_toe/feature/game/domain/ports/game_progress_port.dart';
+import 'package:tic_tac_toe/feature/game/presentation/cubit/game_cubit.dart';
+import 'package:tic_tac_toe/feature/game/presentation/cubit/history_cubit.dart';
 import 'package:tic_tac_toe/feature/game/ui/screens/landing_screen.dart';
 import 'package:tic_tac_toe/feature/game/ui/screens/games_history_screen.dart';
+import 'package:tic_tac_toe/feature/settings/data/move_feedback.dart';
+import 'package:tic_tac_toe/feature/settings/data/shared_preferences_app_settings_repository.dart';
+import 'package:tic_tac_toe/feature/settings/domain/ports/app_settings_port.dart';
+import 'package:tic_tac_toe/feature/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tic_tac_toe/feature/settings/ui/screens/settings_screen.dart';
 
 import 'feature/game/ui/screens/game_over_screen.dart';
 import 'feature/game/ui/screens/game_screen.dart';
+import 'shared/navigation/app_page_transitions.dart';
 import 'shared/utilities/positioning.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final progress = SharedPreferencesGameProgressRepository(prefs);
+  await progress.load();
+  final appSettings = SharedPreferencesAppSettingsRepository(prefs);
+  final moveFeedback = MoveFeedback(settings: appSettings);
+  final scheduler = DailyChallengeScheduler(prefs: prefs, progress: progress);
+  await scheduler.init();
+  await scheduler.reschedule();
+  runApp(
+    MyApp(
+      progress: progress,
+      scheduler: scheduler,
+      appSettings: appSettings,
+      moveFeedback: moveFeedback,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({
+    super.key,
+    required this.progress,
+    required this.scheduler,
+    required this.appSettings,
+    required this.moveFeedback,
+  });
 
-  // This widget is the root of your application.
+  final GameProgressPort progress;
+  final DailyChallengeScheduler scheduler;
+  final AppSettingsPort appSettings;
+  final MoveFeedback moveFeedback;
+
   @override
   Widget build(BuildContext context) {
     Positioning.init(context);
-    return MaterialApp(
-      title: 'Tic Tac Toe',
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (_) => const LandingScreen(),
-        '/game': (_) => const GameScreen(),
-        '/history': (_) => GamesHistoryScreen(),
-      },
-      theme: ThemeData(),
+    return BlocProvider(
+      create: (_) => SettingsCubit(appSettings),
+      child: MaterialApp(
+        title: 'Tic Tac Toe',
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        onGenerateRoute: (settings) {
+          if (settings.name == '/') {
+            return AppPageTransitions.route<void>(
+              builder: (_) => const LandingScreen(),
+              settings: settings,
+            );
+          }
+          if (settings.name == '/history') {
+            return AppPageTransitions.route<void>(
+              builder: (_) => BlocProvider(
+                create: (_) => HistoryCubit(progress),
+                child: const GamesHistoryScreen(),
+              ),
+              settings: settings,
+            );
+          }
+          if (settings.name == '/settings') {
+            return AppPageTransitions.route<void>(
+              builder: (_) => const SettingsScreen(),
+              settings: settings,
+            );
+          }
+          if (settings.name == '/game') {
+            final mode = settings.arguments is GameMode
+                ? settings.arguments as GameMode
+                : GameMode.vsFriend;
+            return AppPageTransitions.route<void>(
+              builder: (_) => BlocProvider(
+                create: (_) => GameCubit(
+                  engine: GameBoardEngine(mode: mode),
+                  cpuPlayer: CpuPlayer(),
+                  progress: progress,
+                  scheduler: scheduler,
+                  moveFeedback: moveFeedback,
+                ),
+                child: const GameScreen(),
+              ),
+              settings: settings,
+            );
+          }
+          return null;
+        },
+        theme: ThemeData(),
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:tic_tac_toe/feature/game/domain/game_mode.dart';
 import 'package:tic_tac_toe/shared/custom_theme_data.dart';
 import 'package:tic_tac_toe/shared/widgets/navbar_widget.dart';
 
@@ -15,6 +16,14 @@ class LandingScreen extends StatelessWidget {
       body: Container(
         width: Positioning.screenWidth,
         height: Positioning.screenHeight,
+        // decoration: BoxDecoration(
+        //   image: DecorationImage(
+        //     image: AssetImage(
+        //       GameUtil.getAssetPath(GameConstants.backgroundImage),
+        //     ),
+        //     fit: BoxFit.cover,
+        //   ),
+        // ),
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -47,7 +56,11 @@ class LandingScreen extends StatelessWidget {
                 text: "Play vs CPU",
                 icon: Icons.directions_boat,
                 customOnTap: () {
-                  Navigator.pushNamed(context, "/game");
+                  Navigator.pushNamed(
+                    context,
+                    '/game',
+                    arguments: GameMode.vsCpu,
+                  );
                 },
               ),
             ),
@@ -58,7 +71,11 @@ class LandingScreen extends StatelessWidget {
                 text: "Play vs Friend",
                 icon: Icons.people,
                 customOnTap: () {
-                  print("Play vs Friend");
+                  Navigator.pushNamed(
+                    context,
+                    '/game',
+                    arguments: GameMode.vsFriend,
+                  );
                 },
               ),
             ),

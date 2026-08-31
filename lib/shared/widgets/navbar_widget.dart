@@ -28,7 +28,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
             text: "Home",
             customOnTap: () {
               if (CustomNavigationBar.selectedIndex == 0) return;
-              Navigator.popAndPushNamed(context, "/");
+              Navigator.pushReplacementNamed(context, "/");
               setState(() {
                 CustomNavigationBar.selectedIndex = 0;
               });
@@ -40,7 +40,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
             text: "History",
             customOnTap: () {
               if (CustomNavigationBar.selectedIndex == 1) return;
-              Navigator.popAndPushNamed(context, "/history");
+              Navigator.pushReplacementNamed(context, "/history");
               setState(() {
                 CustomNavigationBar.selectedIndex = 1;
               });
@@ -52,7 +52,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
             text: "Settings",
             customOnTap: () {
               if (CustomNavigationBar.selectedIndex == 2) return;
-              Navigator.popAndPushNamed(context, "/");
+              Navigator.pushReplacementNamed(context, "/settings");
               setState(() {
                 CustomNavigationBar.selectedIndex = 2;
               });

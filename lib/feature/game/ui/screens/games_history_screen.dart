@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tic_tac_toe/feature/game/domain/date_key.dart';
+import 'package:tic_tac_toe/feature/game/domain/day_history.dart';
+import 'package:tic_tac_toe/feature/game/presentation/cubit/history_cubit.dart';
 import 'package:tic_tac_toe/shared/custom_theme_data.dart';
 import 'package:tic_tac_toe/shared/utilities/positioning.dart';
 import 'package:tic_tac_toe/shared/widgets/navbar_widget.dart';
@@ -6,7 +10,7 @@ import 'package:tic_tac_toe/shared/widgets/navbar_widget.dart';
 import '../../../../shared/widgets/top_bar_widget.dart';
 
 class GamesHistoryScreen extends StatelessWidget {
-  GamesHistoryScreen({super.key});
+  const GamesHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +24,30 @@ class GamesHistoryScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            TopBarWidget(),
+            const TopBarWidget(),
             Expanded(
-              child: ListView.builder(
-                itemCount: 10,
-                itemBuilder: (context, index) {
-                  return InfoCardWidget(
-                    tiltAngle: index % 2 == 0 ? 0.01 : -0.01,
-                    isWin: index % 2 == 0,
-                    isDraw: index % 3 == 0,
+              child: BlocBuilder<HistoryCubit, List<DayHistory>>(
+                builder: (context, days) {
+                  if (days.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No games yet',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: CustomThemeData.fontFamilyKarla,
+                          color: const Color(0xff43474c),
+                        ),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: days.length,
+                    itemBuilder: (context, index) {
+                      return InfoCardWidget(
+                        day: days[index],
+                        tiltAngle: index % 2 == 0 ? 0.01 : -0.01,
+                      );
+                    },
                   );
                 },
               ),
@@ -39,70 +58,31 @@ class GamesHistoryScreen extends StatelessWidget {
       ),
     );
   }
-
-  SizedBox trailingTextWidget() {
-    return SizedBox(
-      height: 66,
-      width: 300,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Container(color: Color(0xff162839), height: 3, width: 100),
-          Text(
-            "Earlier",
-            style: TextStyle(
-              fontSize: 20,
-              fontFamily: CustomThemeData.fontFamilyKarla,
-              fontWeight: FontWeight.normal,
-              color: Color(0xff162839),
-            ),
-          ),
-          Container(color: Color(0xff162839), height: 3, width: 100),
-        ],
-      ),
-    );
-  }
 }
 
 class InfoCardWidget extends StatelessWidget {
-  final bool isWin;
-  final bool isDraw;
+  const InfoCardWidget({super.key, required this.day, required this.tiltAngle});
+
+  final DayHistory day;
   final double tiltAngle;
-
-  InfoCardWidget({
-    super.key,
-    required this.isWin,
-    required this.isDraw,
-    required this.tiltAngle,
-  }) {
-    setColors(isWin, isDraw);
-  }
-
-  Color titleColor = Color(0xffb02d21);
-  Color subtitleUserColor = Color(0xffb02d21);
-  Color subtitleOpponentColor = Color(0xff162839);
-  String titleText = "Win";
-
-  void setColors(bool isWin, bool isDraw) {
-    if (!isWin && !isDraw) {
-      titleColor = Color(0xff43474c).withOpacity(0.8);
-      subtitleUserColor = Color(0xff162839);
-      subtitleOpponentColor = Color(0xffb02d21);
-      titleText = "Loss";
-      return;
-    }
-
-    if (isDraw) {
-      titleColor = Color(0xff2c3e50);
-      subtitleUserColor = Color(0xff162839);
-      subtitleOpponentColor = Color(0xff162839);
-      titleText = "Draw";
-      return;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final titleColor =
+        day.xWins == day.oWins
+            ? const Color(0xff2c3e50)
+            : day.xWins > day.oWins
+            ? const Color(0xffb02d21)
+            : const Color(0xff43474c).withValues(alpha: 0.8);
+    final subtitleUserColor =
+        day.xWins >= day.oWins
+            ? const Color(0xffb02d21)
+            : const Color(0xff162839);
+    final subtitleOpponentColor =
+        day.oWins > day.xWins
+            ? const Color(0xffb02d21)
+            : const Color(0xff162839);
+
     return Transform.rotate(
       angle: tiltAngle,
       child: Center(
@@ -114,7 +94,7 @@ class InfoCardWidget extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Positioning.getAssetSize(10)),
             border: Border.all(
-              color: const Color(0xff162839).withOpacity(0.2),
+              color: const Color(0xff162839).withValues(alpha: 0.2),
               width: Positioning.getAssetSize(1),
             ),
           ),
@@ -125,7 +105,7 @@ class InfoCardWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    titleText,
+                    day.title,
                     style: TextStyle(
                       fontSize: Positioning.getAssetSize(20),
                       fontWeight: FontWeight.normal,
@@ -134,12 +114,12 @@ class InfoCardWidget extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "29 Aug 2026",
+                    DateKey.display(day.date),
                     style: TextStyle(
                       fontSize: Positioning.getAssetSize(14),
                       fontWeight: FontWeight.bold,
                       fontFamily: CustomThemeData.fontFamilyKarla,
-                      color: Color(0xff43474c),
+                      color: const Color(0xff43474c),
                     ),
                   ),
                 ],
@@ -150,21 +130,21 @@ class InfoCardWidget extends StatelessWidget {
                   Column(
                     children: [
                       Text(
-                        "X",
+                        'X',
                         style: TextStyle(
                           fontSize: Positioning.getAssetSize(16),
                           fontWeight: FontWeight.normal,
                           fontFamily: CustomThemeData.fontFamilyBricolage,
-                          color: Color(0xff162839),
+                          color: const Color(0xff162839),
                         ),
                       ),
                       Text(
-                        "3",
+                        '${day.xWins}',
                         style: TextStyle(
                           fontSize: Positioning.getAssetSize(16),
                           fontFamily: CustomThemeData.fontFamilyBricolage,
                           color: subtitleUserColor,
-                          fontVariations: [
+                          fontVariations: const [
                             FontVariation.opticalSize(16),
                             FontVariation.weight(400),
                           ],
@@ -173,32 +153,32 @@ class InfoCardWidget extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    "vs",
+                    'vs',
                     style: TextStyle(
                       fontSize: Positioning.getAssetSize(16),
                       fontWeight: FontWeight.normal,
                       fontFamily: CustomThemeData.fontFamilyKarla,
-                      color: Color(0xff43474c),
+                      color: const Color(0xff43474c),
                     ),
                   ),
                   Column(
                     children: [
                       Text(
-                        "O",
+                        'O',
                         style: TextStyle(
                           fontSize: Positioning.getAssetSize(16),
                           fontWeight: FontWeight.normal,
                           fontFamily: CustomThemeData.fontFamilyBricolage,
-                          color: Color(0xff162839),
+                          color: const Color(0xff162839),
                         ),
                       ),
                       Text(
-                        "3",
+                        '${day.oWins}',
                         style: TextStyle(
                           fontSize: Positioning.getAssetSize(16),
                           fontFamily: CustomThemeData.fontFamilyBricolage,
                           color: subtitleOpponentColor,
-                          fontVariations: [
+                          fontVariations: const [
                             FontVariation.opticalSize(16),
                             FontVariation.weight(400),
                           ],

@@ -3,11 +3,18 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../shared/utilities/positioning.dart';
-import '../../domain/ports/game_board_port.dart';
 
 class GameBoardWidget extends StatelessWidget {
-  final GameBoardPort gameBoardEngine;
-  const GameBoardWidget({super.key, required this.gameBoardEngine});
+  const GameBoardWidget({
+    super.key,
+    required this.board,
+    required this.inputEnabled,
+    required this.onCellTap,
+  });
+
+  final List<List<String>> board;
+  final bool inputEnabled;
+  final void Function(int row, int col) onCellTap;
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +35,9 @@ class GameBoardWidget extends StatelessWidget {
                         width: Positioning.getAssetSize(100),
                         height: Positioning.getAssetSize(100),
                         child: Cell(
-                          row: row,
-                          col: col,
-                          gameBoardEngine: gameBoardEngine,
+                          mark: board[row][col],
+                          enabled: inputEnabled && board[row][col] == '',
+                          onTap: () => onCellTap(row, col),
                         ),
                       ),
                   ],
@@ -43,39 +50,28 @@ class GameBoardWidget extends StatelessWidget {
   }
 }
 
-class Cell extends StatefulWidget {
-  final int row;
-  final int col;
-  final GameBoardPort gameBoardEngine;
+class Cell extends StatelessWidget {
   const Cell({
     super.key,
-    required this.row,
-    required this.col,
-    required this.gameBoardEngine,
+    required this.mark,
+    required this.enabled,
+    required this.onTap,
   });
 
-  @override
-  State<Cell> createState() => _CellState();
-}
+  final String mark;
+  final bool enabled;
+  final VoidCallback onTap;
 
-class _CellState extends State<Cell> {
-  @override
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        if (widget.gameBoardEngine.board[widget.row][widget.col] != "") {
-          return;
-        }
-        widget.gameBoardEngine.makeMove(widget.row, widget.col);
-        setState(() {});
-      },
+      onTap: enabled ? onTap : null,
       child: Container(
         width: Positioning.getAssetSize(100),
         height: Positioning.getAssetSize(100),
         alignment: Alignment.center,
         child: Text(
-          widget.gameBoardEngine.board[widget.row][widget.col] ?? '',
+          mark,
           style: const TextStyle(
             fontSize: 40,
             fontWeight: FontWeight.bold,
