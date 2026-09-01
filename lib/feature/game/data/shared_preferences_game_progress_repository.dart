@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../domain/bot_difficulty.dart';
 import '../domain/date_key.dart';
 import '../domain/day_history.dart';
+import '../domain/game_mode.dart';
 import '../domain/game_progress.dart';
 import '../domain/ports/game_progress_port.dart';
 
@@ -39,6 +41,8 @@ class SharedPreferencesGameProgressRepository implements GameProgressPort {
   Future<int> recordFinishedGame({
     required String winner,
     required bool isDraw,
+    required GameMode mode,
+    required BotDifficulty difficulty,
   }) async {
     final current = await load();
     final today = DateKey.today();
@@ -50,14 +54,32 @@ class SharedPreferencesGameProgressRepository implements GameProgressPort {
     final days = Map<String, DayHistory>.fromEntries(
       current.days.map((day) => MapEntry(day.date, day)),
     );
-    final existing =
-        days[today] ?? DayHistory(date: today, xWins: 0, oWins: 0);
+    var existing = days[today] ?? DayHistory(date: today, xWins: 0, oWins: 0);
     if (!isDraw) {
       if (winner == 'X') {
-        days[today] = existing.copyWith(xWins: existing.xWins + 1);
+        existing = existing.copyWith(
+          xWins: existing.xWins + 1,
+          winsVsEasy:
+              mode == GameMode.vsCpu && difficulty == BotDifficulty.easy
+                  ? existing.winsVsEasy + 1
+                  : existing.winsVsEasy,
+          winsVsMedium:
+              mode == GameMode.vsCpu && difficulty == BotDifficulty.medium
+                  ? existing.winsVsMedium + 1
+                  : existing.winsVsMedium,
+          winsVsHard:
+              mode == GameMode.vsCpu && difficulty == BotDifficulty.hard
+                  ? existing.winsVsHard + 1
+                  : existing.winsVsHard,
+          winsVsFriend:
+              mode == GameMode.vsFriend
+                  ? existing.winsVsFriend + 1
+                  : existing.winsVsFriend,
+        );
       } else if (winner == 'O') {
-        days[today] = existing.copyWith(oWins: existing.oWins + 1);
+        existing = existing.copyWith(oWins: existing.oWins + 1);
       }
+      days[today] = existing;
     } else if (!days.containsKey(today)) {
       days[today] = existing;
     }

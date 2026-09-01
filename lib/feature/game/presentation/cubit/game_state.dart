@@ -33,4 +33,10 @@ class GameState {
       !isGameFinished &&
       !isCpuThinking &&
       (mode == GameMode.vsFriend || currentPlayer == 'X');
+
+  bool get hasStarted =>
+      board.any((row) => row.any((cell) => cell.isNotEmpty));
+
+  bool get canChangeDifficulty =>
+      mode == GameMode.vsCpu && (!hasStarted || isGameFinished);
 }

@@ -1,3 +1,5 @@
+import '../bot_difficulty.dart';
+import '../game_mode.dart';
 import '../game_progress.dart';
 
 abstract interface class GameProgressPort {
@@ -7,5 +9,7 @@ abstract interface class GameProgressPort {
   Future<int> recordFinishedGame({
     required String winner,
     required bool isDraw,
+    required GameMode mode,
+    required BotDifficulty difficulty,
   });
 }

@@ -83,18 +83,31 @@ class GameCubit extends Cubit<GameState> {
   }
 
   Future<bool> onContinueAfterRound() {
+    if (!state.hasStarted && !state.isGameFinished) {
+      return Future.value(false);
+    }
     return _interstitialAds.showAfterCompletedRound(state.round);
   }
 
-  void onNewGame() {
+  Future<bool> onNewGame() async {
+    final countsTowardAds = state.hasStarted || state.isGameFinished;
+    final roundToCount = state.round;
     _cpuJob++;
-    final nextRound = state.isGameFinished ? state.round + 1 : state.round;
+    final adShown =
+        countsTowardAds
+            ? await _interstitialAds.showAfterCompletedRound(roundToCount)
+            : false;
+    if (isClosed) {
+      return adShown;
+    }
+    final nextRound = countsTowardAds ? roundToCount + 1 : roundToCount;
     _engine.resetGame();
     emit(_fromSnapshot(_engine.snapshot, round: nextRound));
+    return adShown;
   }
 
   void onDifficultyChanged(BotDifficulty difficulty) {
-    if (state.mode != GameMode.vsCpu) {
+    if (!state.canChangeDifficulty) {
       return;
     }
     _engine.setDifficulty(difficulty);
@@ -116,6 +129,8 @@ class GameCubit extends Cubit<GameState> {
     final todayPlayerWins = await _progress.recordFinishedGame(
       winner: snapshot.winner,
       isDraw: snapshot.isDraw,
+      mode: snapshot.mode,
+      difficulty: snapshot.difficulty,
     );
     await _scheduler.reschedule();
     if (isClosed) {

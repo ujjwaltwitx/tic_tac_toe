@@ -52,16 +52,15 @@ class GameOverScreen extends StatelessWidget {
                         isDraw ? '=' : (winner.isEmpty ? 'X' : winner),
                         style: TextStyle(
                           fontSize: 84,
-                          fontFamily: CustomThemeData.fontFamilyKarla,
+                          height: 1,
+                          fontFamily: isDraw
+                              ? CustomThemeData.fontFamilyKarla
+                              : CustomThemeData.fontFamilyPatrickHand,
                           color: isDraw
                               ? const Color(0xff162839)
                               : CustomThemeData.colorForMark(
                                   winner.isEmpty ? 'X' : winner,
                                 ),
-                          fontVariations: [
-                            FontVariation('opsz', 84),
-                            FontVariation('wght', 800),
-                          ],
                         ),
                       ),
                     ),
@@ -250,15 +249,31 @@ class GameOverScreen extends StatelessWidget {
                     ),
                     Positioned(
                       bottom: Positioning.getActualDeviceHeight(33),
-                      child: Text(
-                        isDraw
-                            ? "It's a draw."
-                            : "Better luck next time, ${winner == 'X' ? 'O' : 'X'}.",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontFamily: CustomThemeData.fontFamilyKarla,
-                          color: Color(0xff43474c).withValues(alpha: 0.7),
-                          fontWeight: FontWeight.bold,
+                      child: Text.rich(
+                        TextSpan(
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: CustomThemeData.fontFamilyKarla,
+                            color: Color(0xff43474c).withValues(alpha: 0.7),
+                            fontWeight: FontWeight.bold,
+                          ),
+                          children: isDraw
+                              ? const [TextSpan(text: "It's a draw.")]
+                              : [
+                                  const TextSpan(
+                                    text: 'Better luck next time, ',
+                                  ),
+                                  TextSpan(
+                                    text: winner == 'X' ? 'O' : 'X',
+                                    style: const TextStyle(
+                                      fontFamily:
+                                          CustomThemeData.fontFamilyPatrickHand,
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  const TextSpan(text: '.'),
+                                ],
                         ),
                       ),
                     ),

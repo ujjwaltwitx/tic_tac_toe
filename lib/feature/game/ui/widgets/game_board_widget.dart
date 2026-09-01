@@ -89,8 +89,9 @@ class Cell extends StatelessWidget {
         child: Text(
           mark,
           style: TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.bold,
+            fontSize: 48,
+            height: 1,
+            fontFamily: CustomThemeData.fontFamilyPatrickHand,
             color: CustomThemeData.colorForMark(mark),
           ),
         ),

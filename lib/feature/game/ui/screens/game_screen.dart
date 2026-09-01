@@ -81,44 +81,39 @@ class GameScreen extends StatelessWidget {
                           top: Positioning.getActualDeviceHeight(600),
                           child: _cpuThinkingIndicator(),
                         ),
-                      Positioned(
-                        top: Positioning.getActualDeviceHeight(650),
-                        child: InkWell(
-                          onTap: () async {
-                            final cubit = context.read<GameCubit>();
-                            if (cubit.state.isGameFinished) {
-                              await cubit.onContinueAfterRound();
-                            }
-                            if (!context.mounted) {
-                              return;
-                            }
-                            cubit.onNewGame();
-                          },
-                          child: Transform.rotate(
-                            angle: 1 * pi / 180,
-                            child: Container(
-                              width: Positioning.getActualDeviceWidth(128),
-                              height: Positioning.getActualDeviceHeight(52),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: const Color(0xff162839),
-                                  width: 2,
+                      if (state.hasStarted)
+                        Positioned(
+                          top: Positioning.getActualDeviceHeight(650),
+                          child: InkWell(
+                            onTap: () async {
+                              await context.read<GameCubit>().onNewGame();
+                            },
+                            child: Transform.rotate(
+                              angle: 1 * pi / 180,
+                              child: Container(
+                                width: Positioning.getActualDeviceWidth(128),
+                                height: Positioning.getActualDeviceHeight(52),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: const Color(0xff162839),
+                                    width: 2,
+                                  ),
                                 ),
-                              ),
-                              child: Text(
-                                'New Game',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  fontFamily: CustomThemeData.fontFamilyKarla,
-                                  color: const Color(0xffb02d21),
+                                child: Text(
+                                  'New Game',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    fontFamily:
+                                        CustomThemeData.fontFamilyKarla,
+                                    color: const Color(0xffb02d21),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 );
@@ -163,17 +158,33 @@ class GameScreen extends StatelessWidget {
   }
 
   Widget _difficultySwitch(BuildContext context, GameState state) {
+    final canChange = state.canChangeDifficulty;
     return SizedBox(
       width: Positioning.getActualDeviceWidth(342),
       child: SegmentedButton<BotDifficulty>(
         showSelectedIcon: false,
-        segments: const [
-          ButtonSegment(value: BotDifficulty.easy, label: Text('Easy')),
-          ButtonSegment(value: BotDifficulty.medium, label: Text('Medium')),
-          ButtonSegment(value: BotDifficulty.hard, label: Text('Hard')),
+        segments: [
+          ButtonSegment(
+            value: BotDifficulty.easy,
+            label: const Text('Easy'),
+            enabled: canChange || state.difficulty == BotDifficulty.easy,
+          ),
+          ButtonSegment(
+            value: BotDifficulty.medium,
+            label: const Text('Medium'),
+            enabled: canChange || state.difficulty == BotDifficulty.medium,
+          ),
+          ButtonSegment(
+            value: BotDifficulty.hard,
+            label: const Text('Hard'),
+            enabled: canChange || state.difficulty == BotDifficulty.hard,
+          ),
         ],
         selected: {state.difficulty},
         onSelectionChanged: (selected) {
+          if (!canChange) {
+            return;
+          }
           context.read<GameCubit>().onDifficultyChanged(selected.first);
         },
       ),
@@ -181,10 +192,6 @@ class GameScreen extends StatelessWidget {
   }
 
   Widget _roundInfo(GameState state) {
-    final turnText =
-        state.isCpuThinking
-            ? 'CPU thinking...'
-            : "${state.currentPlayer}'s Turn";
     return Container(
       height: Positioning.getActualDeviceHeight(34),
       width: Positioning.getActualDeviceWidth(342),
@@ -200,13 +207,28 @@ class GameScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            turnText,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              fontFamily: CustomThemeData.fontFamilyKarla,
-              color: const Color(0xff162839),
+          Text.rich(
+            TextSpan(
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                fontFamily: CustomThemeData.fontFamilyKarla,
+                color: Color(0xff162839),
+              ),
+              children: state.isCpuThinking
+                  ? const [TextSpan(text: 'CPU thinking...')]
+                  : [
+                      TextSpan(
+                        text: state.currentPlayer,
+                        style: const TextStyle(
+                          fontFamily: CustomThemeData.fontFamilyPatrickHand,
+                          fontWeight: FontWeight.normal,
+                          fontSize: 22,
+                          height: 1,
+                        ),
+                      ),
+                      const TextSpan(text: "'s Turn"),
+                    ],
             ),
           ),
           Text(
@@ -235,15 +257,11 @@ class GameScreen extends StatelessWidget {
           todayPlayerWins: state.todayPlayerWins,
           onPlayAgain: () async {
             final cubit = context.read<GameCubit>();
-            final adShown = await cubit.onContinueAfterRound();
-            if (adShown) {
-              return;
-            }
+            await cubit.onNewGame();
             if (!dialogContext.mounted) {
               return;
             }
             Navigator.of(dialogContext).pop();
-            cubit.onNewGame();
           },
           onMainMenu: () async {
             final cubit = context.read<GameCubit>();

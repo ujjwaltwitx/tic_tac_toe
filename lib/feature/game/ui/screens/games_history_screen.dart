@@ -87,7 +87,7 @@ class InfoCardWidget extends StatelessWidget {
       angle: tiltAngle,
       child: Center(
         child: Container(
-          height: Positioning.getActualDeviceHeight(140),
+          height: Positioning.getActualDeviceHeight(188),
           width: Positioning.getActualDeviceWidth(342),
           margin: EdgeInsets.only(bottom: Positioning.getAssetSize(20)),
           padding: EdgeInsets.all(Positioning.getAssetSize(10)),
@@ -132,9 +132,9 @@ class InfoCardWidget extends StatelessWidget {
                       Text(
                         'X',
                         style: TextStyle(
-                          fontSize: Positioning.getAssetSize(16),
-                          fontWeight: FontWeight.normal,
-                          fontFamily: CustomThemeData.fontFamilyBricolage,
+                          fontSize: Positioning.getAssetSize(22),
+                          height: 1,
+                          fontFamily: CustomThemeData.fontFamilyPatrickHand,
                           color: const Color(0xff162839),
                         ),
                       ),
@@ -166,9 +166,9 @@ class InfoCardWidget extends StatelessWidget {
                       Text(
                         'O',
                         style: TextStyle(
-                          fontSize: Positioning.getAssetSize(16),
-                          fontWeight: FontWeight.normal,
-                          fontFamily: CustomThemeData.fontFamilyBricolage,
+                          fontSize: Positioning.getAssetSize(22),
+                          height: 1,
+                          fontFamily: CustomThemeData.fontFamilyPatrickHand,
                           color: const Color(0xff162839),
                         ),
                       ),
@@ -188,9 +188,92 @@ class InfoCardWidget extends StatelessWidget {
                   ),
                 ],
               ),
+              Column(
+                children: [
+                  Text(
+                    'Wins vs',
+                    style: TextStyle(
+                      fontSize: Positioning.getAssetSize(11),
+                      fontWeight: FontWeight.w600,
+                      fontFamily: CustomThemeData.fontFamilyKarla,
+                      color: const Color(0xff43474c),
+                    ),
+                  ),
+                  SizedBox(height: Positioning.getAssetSize(4)),
+                  _WinBreakdownRow(day: day),
+                ],
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _WinBreakdownRow extends StatelessWidget {
+  const _WinBreakdownRow({required this.day});
+
+  final DayHistory day;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: Positioning.getAssetSize(6),
+        vertical: Positioning.getAssetSize(6),
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xff162839).withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(Positioning.getAssetSize(6)),
+      ),
+      child: Row(
+        children: [
+          _WinStat(label: 'Easy', value: day.winsVsEasy),
+          _WinStat(label: 'Med', value: day.winsVsMedium),
+          _WinStat(label: 'Hard', value: day.winsVsHard),
+          _WinStat(label: 'Friend', value: day.winsVsFriend),
+        ],
+      ),
+    );
+  }
+}
+
+class _WinStat extends StatelessWidget {
+  const _WinStat({required this.label, required this.value});
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: Positioning.getAssetSize(11),
+              fontWeight: FontWeight.w600,
+              fontFamily: CustomThemeData.fontFamilyKarla,
+              color: const Color(0xff43474c),
+            ),
+          ),
+          SizedBox(height: Positioning.getAssetSize(2)),
+          Text(
+            '$value',
+            style: TextStyle(
+              fontSize: Positioning.getAssetSize(14),
+              fontFamily: CustomThemeData.fontFamilyBricolage,
+              color: const Color(0xff162839),
+              fontVariations: const [
+                FontVariation.opticalSize(14),
+                FontVariation.weight(600),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
