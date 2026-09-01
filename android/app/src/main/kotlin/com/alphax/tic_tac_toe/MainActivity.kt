@@ -1,4 +1,4 @@
-package com.alphax.tictactoe
+package com.alphax.tic_tac_toe
 
 import io.flutter.embedding.android.FlutterActivity
 
