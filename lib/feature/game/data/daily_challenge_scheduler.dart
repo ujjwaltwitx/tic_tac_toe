@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,6 +28,9 @@ class DailyChallengeScheduler {
   static const _morningMsKey = 'notif_morning_ms';
   static const _afternoonMsKey = 'notif_afternoon_ms';
   static const _eveningMsKey = 'notif_evening_ms';
+  // App icon is @mipmap/launcher_icon; release shrinking drops unused
+  // @mipmap/ic_launcher. This drawable is referenced by the adaptive icon.
+  static const _androidIcon = '@drawable/ic_launcher_foreground';
 
   final SharedPreferences _prefs;
   final GameProgressPort _progress;
@@ -34,38 +38,49 @@ class DailyChallengeScheduler {
   final FlutterLocalNotificationsPlugin _plugin;
 
   Future<void> init() async {
-    tz_data.initializeTimeZones();
-    final timeZoneName = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(_locationFor(timeZoneName));
+    try {
+      tz_data.initializeTimeZones();
+      final timeZoneName = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(_locationFor(timeZoneName));
 
-    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const ios = DarwinInitializationSettings();
-    await _plugin.initialize(
-      const InitializationSettings(android: android, iOS: ios),
-    );
+      const android = AndroidInitializationSettings(_androidIcon);
+      const ios = DarwinInitializationSettings();
+      await _plugin.initialize(
+        const InitializationSettings(android: android, iOS: ios),
+      );
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.requestNotificationsPermission();
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin
-        >()
-        ?.requestPermissions(alert: true, badge: true, sound: true);
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.requestNotificationsPermission();
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+    } catch (error, stackTrace) {
+      debugPrint('DailyChallengeScheduler.init failed: $error\n$stackTrace');
+    }
   }
 
   Future<void> reschedule() async {
-    final progress = await _progress.load();
-    await _plugin.cancel(_morningId);
-    await _plugin.cancel(_afternoonId);
-    await _plugin.cancel(_eveningId);
+    try {
+      final progress = await _progress.load();
+      await _plugin.cancel(_morningId);
+      await _plugin.cancel(_afternoonId);
+      await _plugin.cancel(_eveningId);
 
-    final target = progress.playedToday
-        ? DateTime.now().add(const Duration(days: 1))
-        : DateTime.now();
-    await _scheduleDay(target);
+      final target =
+          progress.playedToday
+              ? DateTime.now().add(const Duration(days: 1))
+              : DateTime.now();
+      await _scheduleDay(target);
+    } catch (error, stackTrace) {
+      debugPrint(
+        'DailyChallengeScheduler.reschedule failed: $error\n$stackTrace',
+      );
+    }
   }
 
   Future<void> _scheduleDay(DateTime calendarDay) async {
@@ -79,7 +94,8 @@ class DailyChallengeScheduler {
   }
 
   Future<
-      ({tz.TZDateTime morning, tz.TZDateTime afternoon, tz.TZDateTime evening})>
+    ({tz.TZDateTime morning, tz.TZDateTime afternoon, tz.TZDateTime evening})
+  >
   _timesFor(String dateKey, DateTime calendarDay) async {
     final morningMs = _prefs.getInt(_morningMsKey);
     final afternoonMs = _prefs.getInt(_afternoonMsKey);
@@ -140,6 +156,7 @@ class DailyChallengeScheduler {
         'daily_challenge',
         'Daily challenge',
         channelDescription: 'Reminders to play once a day and keep your streak',
+        icon: _androidIcon,
         importance: Importance.defaultImportance,
         priority: Priority.defaultPriority,
       ),
@@ -151,7 +168,7 @@ class DailyChallengeScheduler {
       'Play once today to keep your streak.',
       when,
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
   }
 
